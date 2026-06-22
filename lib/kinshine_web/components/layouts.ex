@@ -86,6 +86,18 @@ defmodule KinshineWeb.Layouts do
               <li>
                 <details open>
                   <summary class="gap-3">
+                    <.icon name="hero-cog-6-tooth" class="size-5" /> Configuration
+                  </summary>
+                  <ul>
+                    <li>
+                      <.link navigate={~p"/configuration/menus"}>Menus</.link>
+                    </li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <details open>
+                  <summary class="gap-3">
                     <.icon name="hero-users" class="size-5" /> User Management
                   </summary>
                   <ul>
