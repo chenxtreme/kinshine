@@ -166,7 +166,7 @@ defmodule KinshineWeb.MenuLive do
       Enum.map(menus, fn m -> {m.mennam, m.menuid} end)
 
     page_options =
-      Enum.map(pages, fn p -> {p.pagnam, p.pageid} end)
+      Enum.map(pages, fn p -> {p.pagtit, p.pageid} end)
 
     form =
       to_form(Basis.change_menu(%Menu{}), as: "menu")
@@ -253,7 +253,7 @@ defmodule KinshineWeb.MenuLive do
 
         <%= if @menu.page do %>
           <span class="badge badge-sm badge-outline">
-            {@menu.page.pagnam}
+            {@menu.page.pagtit}
           </span>
         <% end %>
       </div>
