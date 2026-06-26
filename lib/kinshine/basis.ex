@@ -76,11 +76,33 @@ defmodule Kinshine.Basis do
   # ---------------------------------------------------------------------------
 
   def list_menus do
-    Repo.all(Menu)
+    Repo.all(from m in Menu, preload: :page)
   end
 
   def list_root_menus do
-    Repo.all(from m in Menu, where: is_nil(m.menpar), order_by: m.mensrt)
+    Repo.all(from m in Menu, where: is_nil(m.menpar), order_by: m.mensrt, preload: :page)
+  end
+
+  def list_accessible_menus_for_user(userid) do
+    accessible_page_ids = list_accessible_page_ids_for_user(userid)
+
+    menus =
+      Repo.all(
+        from m in Menu,
+          order_by: [asc: m.mensrt, asc: m.mennam],
+          preload: :page
+      )
+
+    visible_menu_ids = visible_menu_ids(menus, accessible_page_ids)
+
+    Enum.filter(menus, &MapSet.member?(visible_menu_ids, &1.menuid))
+  end
+
+  def list_accessible_root_menus_for_user(userid) do
+    userid
+    |> list_accessible_menus_for_user()
+    |> Enum.filter(&is_nil(&1.menpar))
+    |> Enum.sort_by(&{&1.mensrt, &1.mennam})
   end
 
   def list_child_menus(parent_menuid) do
@@ -91,13 +113,13 @@ defmodule Kinshine.Basis do
 
   def create_menu(attrs \\ %{}) do
     %Menu{}
-    |> Menu.changeset(attrs)
+    |> change_menu(attrs)
     |> Repo.insert()
   end
 
   def update_menu(%Menu{} = menu, attrs) do
     menu
-    |> Menu.changeset(attrs)
+    |> change_menu(attrs)
     |> Repo.update()
   end
 
@@ -106,7 +128,11 @@ defmodule Kinshine.Basis do
   end
 
   def change_menu(%Menu{} = menu, attrs \\ %{}) do
-    Menu.changeset(menu, attrs)
+    menu
+    |> Menu.changeset(attrs)
+    |> validate_parent_menu(changeset_parent_menu_id(attrs, menu))
+    |> validate_linked_menu_leaf(menu)
+    |> validate_unique_sort_order(menu)
   end
 
   # ---------------------------------------------------------------------------
@@ -167,5 +193,164 @@ defmodule Kinshine.Basis do
         where: up.userid == ^userid,
         distinct: true
     )
+  end
+
+  def list_accessible_page_ids_for_user(userid) do
+    userid
+    |> list_pages_for_user()
+    |> Enum.map(& &1.pageid)
+    |> MapSet.new()
+  end
+
+  def menu_has_children?(menuid) when is_binary(menuid) do
+    Repo.exists?(from m in Menu, where: m.menpar == ^menuid)
+  end
+
+  defp visible_menu_ids(menus, accessible_page_ids) do
+    children_by_parent = Enum.group_by(menus, & &1.menpar)
+
+    {visible_ids, _} =
+      collect_visible_menu_ids(
+        children_by_parent[nil] || [],
+        children_by_parent,
+        accessible_page_ids
+      )
+
+    visible_ids
+  end
+
+  defp collect_visible_menu_ids(menus, children_by_parent, accessible_page_ids) do
+    Enum.reduce(menus, {MapSet.new(), false}, fn menu, {visible_ids, any_visible?} ->
+      child_menus = Map.get(children_by_parent, menu.menuid, [])
+
+      {child_visible_ids, child_visible?} =
+        collect_visible_menu_ids(child_menus, children_by_parent, accessible_page_ids)
+
+      # Menu is visible if:
+      # 1. It has a linked page AND user has access to that page, OR
+      # 2. It has a direct link (mnlink) — always visible, OR
+      # 3. It has no pageid and no mnlink (folder) — visible if any child is visible
+      menu_visible? =
+        cond do
+          menu.mnlink -> true
+          menu.pageid -> MapSet.member?(accessible_page_ids, menu.pageid) or child_visible?
+          true -> child_visible?
+        end
+
+      visible_ids = MapSet.union(visible_ids, child_visible_ids)
+
+      if menu_visible? do
+        {MapSet.put(visible_ids, menu.menuid), true}
+      else
+        {visible_ids, any_visible?}
+      end
+    end)
+  end
+
+  defp changeset_parent_menu_id(attrs, menu) do
+    case attrs do
+      %{} ->
+        menpar = Map.get(attrs, "menpar") || Map.get(attrs, :menpar, menu.menpar)
+
+        if menpar == "", do: nil, else: menpar
+
+      _ ->
+        menu.menpar
+    end
+  end
+
+  defp validate_parent_menu(changeset, nil), do: changeset
+
+  defp validate_parent_menu(changeset, parent_menu_id) do
+    case Repo.get(Menu, parent_menu_id) do
+      %Menu{pageid: pageid} when not is_nil(pageid) ->
+        Ecto.Changeset.add_error(
+          changeset,
+          :menpar,
+          "cannot be added under a menu that already has a linked page"
+        )
+
+      %Menu{mnlink: mnlink} when not is_nil(mnlink) ->
+        Ecto.Changeset.add_error(
+          changeset,
+          :menpar,
+          "cannot be added under a menu that already has a link"
+        )
+
+      _ ->
+        changeset
+    end
+  end
+
+  defp validate_linked_menu_leaf(changeset, %Menu{menuid: nil}), do: changeset
+
+  defp validate_linked_menu_leaf(changeset, %Menu{} = menu) do
+    case Ecto.Changeset.get_field(changeset, :pageid) do
+      nil ->
+        changeset
+
+      pageid when pageid == menu.pageid ->
+        changeset
+
+      _pageid ->
+        if menu_has_children?(menu.menuid) do
+          Ecto.Changeset.add_error(
+            changeset,
+            :pageid,
+            "cannot be linked while the menu still has child items"
+          )
+        else
+          changeset
+        end
+    end
+  end
+
+  defp validate_unique_sort_order(changeset, %Menu{} = menu) do
+    mensrt = Ecto.Changeset.get_field(changeset, :mensrt)
+    menpar = Ecto.Changeset.get_field(changeset, :menpar)
+
+    cond do
+      is_nil(mensrt) ->
+        changeset
+
+      is_nil(menu.menuid) ->
+        # New record: check if any existing menu with same parent has this sort order
+        if sort_order_exists?(mensrt, menpar, nil) do
+          Ecto.Changeset.add_error(
+            changeset,
+            :mensrt,
+            "has already been taken for this parent menu"
+          )
+        else
+          changeset
+        end
+
+      true ->
+        # Existing record: exclude self when checking
+        if sort_order_exists?(mensrt, menpar, menu.menuid) do
+          Ecto.Changeset.add_error(
+            changeset,
+            :mensrt,
+            "has already been taken for this parent menu"
+          )
+        else
+          changeset
+        end
+    end
+  end
+
+  defp sort_order_exists?(mensrt, menpar, exclude_menuid) do
+    query =
+      if is_nil(menpar) do
+        from m in Menu, where: m.mensrt == ^mensrt and is_nil(m.menpar)
+      else
+        from m in Menu, where: m.mensrt == ^mensrt and m.menpar == ^menpar
+      end
+
+    if exclude_menuid do
+      Repo.exists?(from m in query, where: m.menuid != ^exclude_menuid)
+    else
+      Repo.exists?(query)
+    end
   end
 end

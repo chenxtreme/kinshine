@@ -1,0 +1,169 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="space-y-6">
+    <%!-- Page header --%>
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="text-sm breadcrumbs text-base-content/60 mb-2">
+          <ul>
+            <li><a>Finance</a></li>
+
+            <li><a>Master</a></li>
+
+            <li>
+              <span class="font-semibold">
+                {if(@live_action == :new,
+                  do: "New COA GL Account",
+                  else:
+                    if(@live_action == :edit, do: "Edit COA GL Account", else: "COA GL Account")
+                )}
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <h1 class="text-2xl font-bold">COA GL Account</h1>
+
+        <p class="text-base-content/60 mt-1">
+          Assign GL accounts to Chart of Accounts
+        </p>
+      </div>
+
+      <%= if @live_action == :index do %>
+        <.link navigate={~p"/finance/companycodeglaccount/new"}>
+          <button class="btn btn-primary">
+            <.icon name="hero-plus" class="size-4" /> Add Assignment
+          </button>
+        </.link>
+      <% end %>
+    </div>
+
+    <%= if @live_action != :index do %>
+      <%!-- Form Card --%>
+      <div class="card bg-base-100 shadow max-w-2xl">
+        <div class="card-body">
+          <h2 class="card-title text-lg">
+            <.icon
+              name={if @live_action == :edit, do: "hero-pencil-square", else: "hero-plus-circle"}
+              class="size-5"
+            /> {if @live_action == :edit, do: "Edit COA GL Account", else: "New COA GL Account"}
+          </h2>
+
+          <.form
+            for={@form}
+            id="coa-gl-account-form"
+            phx-change="validate"
+            phx-submit="save"
+            class="space-y-4"
+          >
+            <%!-- Chart of Account --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Chart of Account</span>
+              </label>
+
+              <.input
+                field={@form[:coaid]}
+                type="select"
+                options={
+                  Enum.map(@chart_of_accounts, &{&1.coaid <> " - " <> &1.coanam, &1.coaid})
+                }
+                prompt="Select Chart of Account"
+                disabled={@live_action == :edit}
+                required
+              />
+            </div>
+            <%!-- Account Number --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Account Number</span>
+              </label>
+
+              <.input
+                field={@form[:acnum]}
+                type="select"
+                options={Enum.map(@gl_accounts, &{&1.acnum <> " - " <> &1.acnam, &1.acnum})}
+                prompt="Select GL Account"
+                disabled={@live_action == :edit}
+                required
+              />
+            </div>
+            <%!-- Action Buttons --%>
+            <div class="form-control mt-6 flex flex-row gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary flex-1"
+                phx-disable-with="Saving..."
+              >
+                <.icon name="hero-check" class="size-4" /> {if @live_action == :edit,
+                  do: "Update",
+                  else: "Save"}
+              </button>
+
+              <button type="button" phx-click="cancel" class="btn btn-ghost">
+                Cancel
+              </button>
+            </div>
+          </.form>
+        </div>
+      </div>
+    <% end %>
+    <%!-- Table --%>
+    <%= if @live_action == :index do %>
+      <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+          <div class="overflow-x-auto">
+            <table class="table table-zebra">
+              <thead>
+                <tr>
+                  <th>COA ID</th>
+
+                  <th>Account No</th>
+
+                  <th class="w-28 text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="coa-gl-accounts" phx-update="stream">
+                <tr :for={{id, coa_gl} <- @streams.coa_gl_accounts} id={id}>
+                  <td class="font-mono">{coa_gl.coaid}</td>
+
+                  <td class="font-mono">{coa_gl.acnum}</td>
+
+                  <td class="text-right">
+                    <div class="flex justify-end gap-1">
+                      <.link navigate={
+                        ~p"/finance/companycodeglaccount/#{coa_gl.coaid}/#{coa_gl.acnum}/edit"
+                      }>
+                        <button class="btn btn-outline btn-primary btn-xs btn-square" title="Edit">
+                          <.icon name="hero-pencil-square" class="size-4" />
+                        </button>
+                      </.link>
+
+                      <button
+                        phx-click="delete"
+                        phx-value-coaid={coa_gl.coaid}
+                        phx-value-acnum={coa_gl.acnum}
+                        class="btn btn-outline btn-error btn-xs btn-square"
+                        title="Delete"
+                        data-confirm="Are you sure you want to delete this assignment?"
+                      >
+                        <.icon name="hero-trash" class="size-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr :if={@coa_gl_accounts_empty?}>
+                  <td colspan="3" class="text-center py-8 text-base-content/60">
+                    <.icon name="hero-building-library" class="size-12 mx-auto opacity-50" />
+                    <p class="mt-2">No COA GL Account assignments yet.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</Layouts.app>

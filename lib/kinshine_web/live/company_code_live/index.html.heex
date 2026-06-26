@@ -1,0 +1,215 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="space-y-6">
+    <%!-- Page header --%>
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="text-sm breadcrumbs text-base-content/60 mb-2">
+          <ul>
+            <li><a>Finance</a></li>
+
+            <li><a>Master</a></li>
+
+            <li>
+              <span class="font-semibold">
+                {if(@live_action == :new,
+                  do: "New Company Code",
+                  else: if(@live_action == :edit, do: "Edit Company Code", else: "Company Code")
+                )}
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <h1 class="text-2xl font-bold">Company Code</h1>
+
+        <p class="text-base-content/60 mt-1">
+          Manage company codes for organizational structure
+        </p>
+      </div>
+
+      <%= if @live_action == :index do %>
+        <.link navigate={~p"/finance/companycode/new"}>
+          <button class="btn btn-primary">
+            <.icon name="hero-plus" class="size-4" /> Add Company Code
+          </button>
+        </.link>
+      <% end %>
+    </div>
+
+    <%= if @live_action != :index do %>
+      <%!-- Form Card --%>
+      <div class="card bg-base-100 shadow max-w-2xl">
+        <div class="card-body">
+          <h2 class="card-title text-lg">
+            <.icon
+              name={if @live_action == :edit, do: "hero-pencil-square", else: "hero-plus-circle"}
+              class="size-5"
+            /> {if @live_action == :edit, do: "Edit Company Code", else: "New Company Code"}
+          </h2>
+
+          <.form
+            for={@form}
+            id="company-code-form"
+            phx-change="validate"
+            phx-submit="save"
+            class="space-y-4"
+          >
+            <%!-- Company Code ID --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Company Code</span>
+              </label>
+
+              <.input
+                field={@form[:comcod]}
+                type="text"
+                placeholder="e.g., 1000"
+                disabled={@live_action == :edit}
+                required
+              />
+              <p class="label-text-alt text-base-content/60 mt-1">
+                Unique identifier, uppercase alphanumeric (max 4 chars)
+              </p>
+            </div>
+            <%!-- Company Name --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Company Name</span>
+              </label>
+
+              <.input
+                field={@form[:comnam]}
+                type="text"
+                placeholder="e.g., PT. Kinshine Indonesia"
+                required
+              />
+            </div>
+            <%!-- Address --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Address</span>
+              </label>
+
+              <.input
+                field={@form[:comadd]}
+                type="text"
+                placeholder="e.g., Jl. Sudirman No. 123"
+              />
+            </div>
+            <%!-- Country --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Country</span>
+              </label>
+
+              <.input
+                field={@form[:comcty]}
+                type="text"
+                placeholder="e.g., Indonesia"
+              />
+            </div>
+            <%!-- Currency --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Currency</span>
+              </label>
+
+              <.input
+                field={@form[:comcrn]}
+                type="text"
+                placeholder="e.g., IDR"
+                required
+              />
+              <p class="label-text-alt text-base-content/60 mt-1">
+                ISO currency code (max 3 chars)
+              </p>
+            </div>
+            <%!-- Action Buttons --%>
+            <div class="form-control mt-6 flex flex-row gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary flex-1"
+                phx-disable-with="Saving..."
+              >
+                <.icon name="hero-check" class="size-4" /> {if @live_action == :edit,
+                  do: "Update",
+                  else: "Save"}
+              </button>
+
+              <button type="button" phx-click="cancel" class="btn btn-ghost">
+                Cancel
+              </button>
+            </div>
+          </.form>
+        </div>
+      </div>
+    <% end %>
+    <%!-- Table --%>
+    <%= if @live_action == :index do %>
+      <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+          <div class="overflow-x-auto">
+            <table class="table table-zebra">
+              <thead>
+                <tr>
+                  <th class="w-24">Code</th>
+
+                  <th>Company Name</th>
+
+                  <th>Address</th>
+
+                  <th class="w-24">Country</th>
+
+                  <th class="w-20">Currency</th>
+
+                  <th class="w-28 text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr :for={{id, company_code} <- @streams.company_codes} id={id}>
+                  <td class="font-mono font-bold">{company_code.comcod}</td>
+
+                  <td>{company_code.comnam}</td>
+
+                  <td class="text-base-content/70">{company_code.comadd}</td>
+
+                  <td>{company_code.comcty}</td>
+
+                  <td class="font-mono">{company_code.comcrn}</td>
+
+                  <td class="text-right">
+                    <div class="flex justify-end gap-1">
+                      <.link navigate={~p"/finance/companycode/#{company_code.comcod}/edit"}>
+                        <button class="btn btn-outline btn-primary btn-xs btn-square" title="Edit">
+                          <.icon name="hero-pencil-square" class="size-4" />
+                        </button>
+                      </.link>
+
+                      <button
+                        phx-click="delete"
+                        phx-value-id={company_code.comcod}
+                        class="btn btn-outline btn-error btn-xs btn-square"
+                        title="Delete"
+                        data-confirm="Are you sure you want to delete #{company_code.comcod}?"
+                      >
+                        <.icon name="hero-trash" class="size-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr :if={@company_codes_empty?}>
+                  <td colspan="6" class="text-center py-8 text-base-content/60">
+                    <.icon name="hero-building-office-2" class="size-12 mx-auto opacity-50" />
+                    <p class="mt-2">No company codes yet. Add your first company code!</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</Layouts.app>

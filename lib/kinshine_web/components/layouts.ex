@@ -52,9 +52,11 @@ defmodule KinshineWeb.Layouts do
               <span class="text-sm text-base-content/60 hidden sm:block">
                 {@current_scope.user.emails}
               </span>
+
               <.link navigate={~p"/users/settings"} class="btn btn-ghost btn-sm">
                 <.icon name="hero-cog-6-tooth" class="size-4" /> Settings
               </.link>
+
               <.link
                 href={~p"/users/log-out"}
                 method="delete"
@@ -77,17 +79,20 @@ defmodule KinshineWeb.Layouts do
             <div class="px-5 py-5 border-b border-base-300">
               <a href="/dashboard" class="text-xl font-bold text-primary">Kinshine</a>
             </div>
-            <ul class="menu menu-md flex-1 px-3 pt-3 gap-1">
+
+            <ul class="menu menu-md px-3 pt-3 gap-1">
               <li>
                 <.link navigate={~p"/dashboard"} class="gap-3">
                   <.icon name="hero-home" class="size-5" /> Dashboard
                 </.link>
               </li>
+
               <li>
                 <details open>
                   <summary class="gap-3">
                     <.icon name="hero-cog-6-tooth" class="size-5" /> Configuration
                   </summary>
+
                   <ul>
                     <li>
                       <.link navigate={~p"/configuration/menus"}>Menus</.link>
@@ -95,11 +100,13 @@ defmodule KinshineWeb.Layouts do
                   </ul>
                 </details>
               </li>
+
               <li>
                 <details open>
                   <summary class="gap-3">
                     <.icon name="hero-users" class="size-5" /> User Management
                   </summary>
+
                   <ul>
                     <li>
                       <.link navigate={~p"/users/settings"}>My Settings</.link>
@@ -107,18 +114,17 @@ defmodule KinshineWeb.Layouts do
                   </ul>
                 </details>
               </li>
-              <li>
-                <details>
-                  <summary class="gap-3">
-                    <.icon name="hero-chart-bar" class="size-5" /> Reports
-                  </summary>
-                  <ul>
-                    <li>
-                      <a class="opacity-50 cursor-default">Coming soon…</a>
-                    </li>
-                  </ul>
-                </details>
-              </li>
+
+              <%!-- Dynamic Menu Tree (di bawah User Management) --%>
+              <%= for root_menu <- Kinshine.Basis.list_accessible_root_menus_for_user(@current_scope.user.userid) do %>
+                <.sidebar_menu_item
+                  menu={root_menu}
+                  all_menus={
+                    Kinshine.Basis.list_accessible_menus_for_user(@current_scope.user.userid)
+                  }
+                  level={0}
+                />
+              <% end %>
             </ul>
           </aside>
         </div>
@@ -132,9 +138,11 @@ defmodule KinshineWeb.Layouts do
             <.theme_toggle />
           </div>
         </div>
+
         <main class="flex-1 flex items-center justify-center p-4">
           {render_slot(@inner_block)}
         </main>
+
         <footer class="text-center text-xs text-base-content/30 py-4">
           © {Date.utc_today().year} Kinshine
         </footer>
@@ -142,6 +150,45 @@ defmodule KinshineWeb.Layouts do
     <% end %>
     <.flash_group flash={@flash} />
     """
+  end
+
+  attr :menu, :map, required: true
+  attr :all_menus, :list, required: true
+  attr :level, :integer, default: 0
+
+  def sidebar_menu_item(assigns) do
+    ~H"""
+    <li>
+      <%= if has_sidebar_children?(@menu, @all_menus) do %>
+        <details open>
+          <summary class="gap-3">
+            <.icon name="hero-folder" class="size-4" />
+            {@menu.mennam}
+          </summary>
+          <ul>
+            <%= for child <- get_sidebar_children(@menu, @all_menus) do %>
+              <.sidebar_menu_item menu={child} all_menus={@all_menus} level={@level + 1} />
+            <% end %>
+          </ul>
+        </details>
+      <% else %>
+        <.link navigate={@menu.mnlink || "#"} class="gap-3">
+          <.icon name="hero-document" class="size-4" />
+          {@menu.mennam}
+        </.link>
+      <% end %>
+    </li>
+    """
+  end
+
+  defp has_sidebar_children?(menu, all_menus) do
+    Enum.any?(all_menus, &(&1.menpar == menu.menuid))
+  end
+
+  defp get_sidebar_children(menu, all_menus) do
+    all_menus
+    |> Enum.filter(&(&1.menpar == menu.menuid))
+    |> Enum.sort_by(&{&1.mensrt, &1.mennam})
   end
 
   @doc """
@@ -157,9 +204,7 @@ defmodule KinshineWeb.Layouts do
   def flash_group(assigns) do
     ~H"""
     <div id={@id} aria-live="polite">
-      <.flash kind={:info} flash={@flash} />
-      <.flash kind={:error} flash={@flash} />
-
+      <.flash kind={:info} flash={@flash} /> <.flash kind={:error} flash={@flash} />
       <.flash
         id="client-error"
         kind={:error}
@@ -202,7 +247,6 @@ defmodule KinshineWeb.Layouts do
     ~H"""
     <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
       <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 [[data-theme-source=system]_&]:!left-0 transition-[left]" />
-
       <button
         class="flex p-2 cursor-pointer w-1/3"
         phx-click={JS.dispatch("phx:set-theme")}

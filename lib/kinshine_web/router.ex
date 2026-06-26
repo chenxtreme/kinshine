@@ -56,10 +56,48 @@ defmodule KinshineWeb.Router do
       live "/dashboard", DashboardLive, :index
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
-      
-      <%!-- Configuration > Menus --%>
+
+      # Configuration > Menus
       live "/configuration/menus", MenuLive, :index
       live "/configuration/menus/new", MenuLive, :new
+
+      # Finance > Master > Company Code
+      live "/finance/companycode", CompanyCodeLive.Index, :index
+      live "/finance/companycode/new", CompanyCodeLive.Index, :new
+      live "/finance/companycode/:id/edit", CompanyCodeLive.Index, :edit
+
+      # Finance > Master > Fiscal Year Variant
+      live "/finance/fiscalyearvariant", FiscalYearVariantLive.Index, :index
+      live "/finance/fiscalyearvariant/new", FiscalYearVariantLive.Index, :new
+      live "/finance/fiscalyearvariant/:id/edit", FiscalYearVariantLive.Index, :edit
+
+      # Finance > Master > Posting Period Variant
+      live "/finance/postingperiodvariant", PostingPeriodVariantLive.Index, :index
+      live "/finance/postingperiodvariant/new", PostingPeriodVariantLive.Index, :new
+      live "/finance/postingperiodvariant/:id/edit", PostingPeriodVariantLive.Index, :edit
+
+      # Finance > Master > Period Control
+      live "/finance/periodcontrol", PeriodControlLive.Index, :index
+      live "/finance/periodcontrol/new", PeriodControlLive.Index, :new
+      live "/finance/periodcontrol/:id/edit", PeriodControlLive.Index, :edit
+
+      # Finance > Master > Account Group
+      live "/finance/accountgroup", AccountGroupLive.Index, :index
+      live "/finance/accountgroup/new", AccountGroupLive.Index, :new
+      live "/finance/accountgroup/:id/edit", AccountGroupLive.Index, :edit
+
+      # Finance > Master > GL Account Master
+      live "/finance/glaccountmaster", GLAccountMasterLive.Index, :index
+      live "/finance/glaccountmaster/new", GLAccountMasterLive.Index, :new
+      live "/finance/glaccountmaster/:id/edit", GLAccountMasterLive.Index, :edit
+
+      # Finance > Master > COA GL Account
+      live "/finance/companycodeglaccount", CompanyCodeGLAccountLive.Index, :index
+      live "/finance/companycodeglaccount/new", CompanyCodeGLAccountLive.Index, :new
+
+      live "/finance/companycodeglaccount/:coaid/:acnum/edit",
+           CompanyCodeGLAccountLive.Index,
+           :edit
     end
 
     post "/users/update-password", UserSessionController, :update_password

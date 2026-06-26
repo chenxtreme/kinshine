@@ -1,0 +1,197 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="space-y-6">
+    <%!-- Page header --%>
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="text-sm breadcrumbs text-base-content/60 mb-2">
+          <ul>
+            <li><a>Finance</a></li>
+
+            <li><a>Master</a></li>
+
+            <li>
+              <span class="font-semibold">
+                {if(@live_action == :new,
+                  do: "New GL Account",
+                  else:
+                    if(@live_action == :edit, do: "Edit GL Account", else: "GL Account Master")
+                )}
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <h1 class="text-2xl font-bold">GL Account Master</h1>
+
+        <p class="text-base-content/60 mt-1">
+          Chart of accounts — define all general ledger accounts
+        </p>
+      </div>
+
+      <%= if @live_action == :index do %>
+        <.link navigate={~p"/finance/glaccountmaster/new"}>
+          <button class="btn btn-primary">
+            <.icon name="hero-plus" class="size-4" /> Add GL Account
+          </button>
+        </.link>
+      <% end %>
+    </div>
+
+    <%= if @live_action != :index do %>
+      <%!-- Form Card --%>
+      <div class="card bg-base-100 shadow max-w-2xl">
+        <div class="card-body">
+          <h2 class="card-title text-lg">
+            <.icon
+              name={if @live_action == :edit, do: "hero-pencil-square", else: "hero-plus-circle"}
+              class="size-5"
+            /> {if @live_action == :edit, do: "Edit GL Account", else: "New GL Account"}
+          </h2>
+
+          <.form
+            for={@form}
+            id="gl-account-form"
+            phx-change="validate"
+            phx-submit="save"
+            class="space-y-4"
+          >
+            <%!-- Account Number --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Account Number</span>
+              </label>
+
+              <.input
+                field={@form[:acnum]}
+                type="text"
+                placeholder="e.g., 110000"
+                disabled={@live_action == :edit}
+                required
+              />
+              <p class="label-text-alt text-base-content/60 mt-1">
+                Unique account number, max 10 characters
+              </p>
+            </div>
+            <%!-- Account Name --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Account Name</span>
+              </label>
+
+              <.input
+                field={@form[:acnam]}
+                type="text"
+                placeholder="e.g., Cash on Hand"
+                required
+              />
+            </div>
+            <%!-- Account Group --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Account Group</span>
+              </label>
+
+              <.input
+                field={@form[:acgid]}
+                type="select"
+                options={Enum.map(@groups, &{&1.acgid <> " - " <> &1.acgnam, &1.acgid})}
+                prompt="Select Account Group"
+                required
+              />
+            </div>
+            <%!-- Description --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Description</span>
+              </label>
+
+              <.input
+                field={@form[:acdesc]}
+                type="textarea"
+                placeholder="Optional description for this account"
+                rows="3"
+              />
+            </div>
+            <%!-- Action Buttons --%>
+            <div class="form-control mt-6 flex flex-row gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary flex-1"
+                phx-disable-with="Saving..."
+              >
+                <.icon name="hero-check" class="size-4" /> {if @live_action == :edit,
+                  do: "Update",
+                  else: "Save"}
+              </button>
+
+              <button type="button" phx-click="cancel" class="btn btn-ghost">
+                Cancel
+              </button>
+            </div>
+          </.form>
+        </div>
+      </div>
+    <% end %>
+    <%!-- Table --%>
+    <%= if @live_action == :index do %>
+      <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+          <div class="overflow-x-auto">
+            <table class="table table-zebra">
+              <thead>
+                <tr>
+                  <th class="w-28">Account No</th>
+
+                  <th>Account Name</th>
+
+                  <th class="w-28">Group</th>
+
+                  <th class="w-28 text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr :for={{id, account} <- @streams.accounts} id={id}>
+                  <td class="font-mono font-bold">{account.acnum}</td>
+
+                  <td>{account.acnam}</td>
+
+                  <td>
+                    <span class="badge badge-sm badge-ghost">{account.acgid}</span>
+                  </td>
+
+                  <td class="text-right">
+                    <div class="flex justify-end gap-1">
+                      <.link navigate={~p"/finance/glaccountmaster/#{account.acnum}/edit"}>
+                        <button class="btn btn-outline btn-primary btn-xs btn-square" title="Edit">
+                          <.icon name="hero-pencil-square" class="size-4" />
+                        </button>
+                      </.link>
+
+                      <button
+                        phx-click="delete"
+                        phx-value-id={account.acnum}
+                        class="btn btn-outline btn-error btn-xs btn-square"
+                        title="Delete"
+                        data-confirm="Are you sure you want to delete #{account.acnum}?"
+                      >
+                        <.icon name="hero-trash" class="size-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr :if={@accounts_empty?}>
+                  <td colspan="4" class="text-center py-8 text-base-content/60">
+                    <.icon name="hero-book-open" class="size-12 mx-auto opacity-50" />
+                    <p class="mt-2">No GL accounts yet. Add your first account!</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</Layouts.app>
