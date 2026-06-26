@@ -124,6 +124,22 @@
                 ISO currency code (max 3 chars)
               </p>
             </div>
+            <%!-- Chart of Account --%>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Chart of Account</span>
+              </label>
+
+              <.input
+                field={@form[:coaid]}
+                type="select"
+                prompt="Select a Chart of Account"
+                options={@chart_of_accounts}
+              />
+              <p class="label-text-alt text-base-content/60 mt-1">
+                Assign a Chart of Account to this Company Code (1:1 relationship)
+              </p>
+            </div>
             <%!-- Action Buttons --%>
             <div class="form-control mt-6 flex flex-row gap-2">
               <button
@@ -162,6 +178,8 @@
 
                   <th class="w-20">Currency</th>
 
+                  <th class="w-20">COA</th>
+
                   <th class="w-28 text-right">Actions</th>
                 </tr>
               </thead>
@@ -177,6 +195,8 @@
                   <td>{company_code.comcty}</td>
 
                   <td class="font-mono">{company_code.comcrn}</td>
+
+                  <td class="font-mono">{company_code.coaid || "-"}</td>
 
                   <td class="text-right">
                     <div class="flex justify-end gap-1">

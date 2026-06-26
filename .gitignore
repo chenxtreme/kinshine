@@ -1,172 +1,360 @@
-# Examples and local configuration
-*.beam
-*.ez
-*.plt
-*.po
-*.pot
-*.potools
-ebin/
-cover/
-doc/
-ebin/
-deps/
-_build/
-*.ez
-*.tar
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-*.zip
-*.gz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-
-# Environment variables
-.env
-.env.local
-*.env.*
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# Logs
-*.log
-log/
-
-# Temporary files
-*.tmp
-*.temp
-*~
-
-# IDE specific
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Build outputs
-dist/
-build/
-target/
-_coverage/
-.coverage
-htmlcov/
-.nyc_output/
-coverage/
-
-# Dependencies
-node_modules/
-vendor/
-deps/
-
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.nox/
-.pytest_cache/
-.mypy_cache/
-.hypothesis/
-
-# Node specific
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Ruby specific
-*.gem
-*.rbc
-.bundle/
-config.ru
-Gemfile.lock
-
-# Java specific
-*.class
-*.jar
-*.war
-*.ear
-*.nar
-*.so
-*.dll
-*.dylib
-target/
-.gradle/
-build/
-
-# C/C++ specific
-*.o
-*.a
-*.obj
-*.out
-*.exe
-*.dll
-*.so
-*.dylib
-*.dSYM/
-*.ilk
-*.pdb
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Go specific
-*.exe
-*.test
-*.prof
-*.out
-go.mod
-go.sum
-
-# Rust specific
-Cargo.lock
-*.rlib
-*.so
-*.dylib
-*.dSYM/
-target/
-
-# Elixir specific
-_mix/
-erl_crash.dump
-*.ez
-
-# Julia specific
-julia-*/
-.julia/
-
-# Zig specific
-zig*/
-
-# Temporary editor files
-*.swp
-*.swo
-*~
+# Examples
+#   node_modules                 # dependencies
+#   /docs/_build                 # local gitignore is safest
+#   /assets/css/app.css          # build outputs
+#
+#   # Ignore .fetch files
+#   *.fetch
+#
+#   # Ignore .beam and .ez files
+#   *.beam
+#   *.ez
+#
+#   # OTP release
+#   _build/
+#
+#   # Dependencies
+#   deps/
+#   cover/
+#   .elixir_ls/
+#   erl_crash.dump
+#
+#   # Environment variables
+#   .env
+#
+#   # Secrets
+#   config/runtime.exs
+#
+#   # Mac
+#   .DS_Store
+#
+#   # Windows
+#   Thumbs.db
+#
+#   # Vim
+#   *~
+#   .netrwhist
+#   Session.vim
+#
+#   # Emacs
+#   *~
+#   \#*\#
+#   .\#*
+#
+#   # VSCode
+#   .vscode/
+#
+#   # IntelliJ IDEA
+#   .idea/
+#
+#   # Build artifacts
+#   _build/
+#   priv/repo/*.dump
+#
+#   # Log files
+#   log/*.log
+#   test/log/*.log
+#
+#   # Environment specific files
+#   config/*.secret.exs
+#   config/*_dev.secret.exs
+#   config/*_test.secret.exs
+#   config/*_prod.secret.exs
+#
+#   # Distillery releases
+#   rel/
+#
+#   # Phoenix static assets
+#   assets/node_modules/
+#   assets/vendor/
+#   assets/dist/
+#
+#   # Test coverage
+#   cover/
+#   .nyc_output/
+#   coverage/
+#   htmlcov/
+#   .coverage
+#
+#   # Database
+#   priv/repo/seeds.exs
+#   priv/repo/*.sql
+#
+#   # Environment variables
+#   .env*
+#
+#   # Temporary files
+#   *.tmp
+#   *.temp
+#   .tmp/
+#
+#   # OS generated files
+#   .DS_Store
+#   .DS_Store?
+#   ._*
+#   .Spotlight-V100
+#   .Trashes
+#   ehthumbs.db
+#   Thumbs.db
+#   !Thumbs.db
+#
+#   # IDE specific
+#   .idea/
+#   .vscode/
+#   *.swp
+#   *.swo
+#
+#   # Python related (if any Python tools used)
+#   __pycache__/
+#   *.pyc
+#   *.pyo
+#   .pytest_cache/
+#   .mypy_cache/
+#   .tox/
+#   .nox/
+#
+#   # Node.js related (for Phoenix assets)
+#   node_modules/
+#   npm-debug.log*
+#   yarn-debug.log*
+#   yarn-error.log*
+#   .npm/
+#   .yarn-integrity
+#   .yarn/
+#
+#   # Elixir build artifacts
+#   _build/
+#   .elixir_ls/
+#   .formatter.exs.swp
+#   *.beam
+#   *.ez
+#   erl_crash.dump
+#
+#   # Phoenix specific
+#   assets/node_modules/
+#   assets/vendor/
+#   assets/dist/
+#   priv/static/
+#
+#   # Dependencies
+#   deps/
+#   mix.lock
+#
+#   # Logs
+#   log/
+#   logs/
+#
+#   # Coverage
+#   cover/
+#   coverage/
+#   .coverage
+#   htmlcov/
+#
+#   # Environment files
+#   .env
+#   .env.local
+#   .env.*
+#
+#   # Temporary and cache directories
+#   tmp/
+#   .tmp/
+#   .cache/
+#   .npm/
+#   .yarn/
+#   .mix/
+#   .hex/
+#
+#   # Compressed files
+#   *.zip
+#   *.gz
+#   *.tar
+#   *.tgz
+#   *.bz2
+#   *.xz
+#   *.7z
+#   *.rar
+#   *.zst
+#   *.lz4
+#   *.lzh
+#   *.cab
+#   *.arj
+#   *.rpm
+#   *.deb
+#   *.Z
+#   *.lz
+#   *.lzo
+#   *.tar.gz
+#   *.tar.bz2
+#   *.tar.xz
+#   *.tar.zst
+#
+#   # System files
+#   .DS_Store
+#   Thumbs.db
+#   .Spotlight-V100
+#   .Trashes
+#   ehthumbs.db
+#
+#   # Editor swap files
+#   *.swp
+#   *.swo
+#   .netrwhist
+#   Session.vim
+#
+#   # Emacs
+#   *~
+#   \#*\#
+#   .\#*
+#
+#   # Python cache
+#   __pycache__/
+#   *.pyc
+#   *.pyo
+#   .pytest_cache/
+#   .mypy_cache/
+#   .tox/
+#   .nox/
+#
+#   # Ruby
+#   .bundle/
+#   Gemfile.lock
+#   vendor/bundle/
+#   vendor/cache/
+#   vendor/gems/
+#   vendor/ruby/
+#
+#   # Java
+#   *.class
+#   *.jar
+#   *.war
+#   *.ear
+#   target/
+#   .gradle/
+#   build/
+#
+#   # Go
+#   *.exe
+#   *.dll
+#   *.so
+#   *.a
+#   *.o
+#   *.out
+#   bin/
+#   pkg/
+#   go.sum
+#   go.mod
+#
+#   # C/C++
+#   *.o
+#   *.obj
+#   *.exe
+#   *.dll
+#   *.so
+#   *.a
+#   *.out
+#   obj/
+#   Debug/
+#   Release/
+#   x64/
+#   x86/
+#
+#   # Julia
+#   julia-*/
+#   .julia/
+#
+#   # Zig
+#   zig-cache/
+#   zig-out/
+#
+#   # Rust
+#   Cargo.lock
+#   target/
+#   .cargo/
+#   .rustup/
+#   .rustfmt.toml
+#
+#   # Elixir specific additions
+#   _build/
+#   deps/
+#   *.beam
+#   *.ez
+#   .elixir_ls/
+#   mix.lock
+#   erl_crash.dump
+#   priv/repo/*.dump
+#   priv/static/
+#   cover/
+#   .nyc_output/
+#   coverage/
+#   htmlcov/
+#   .coverage
+#   config/*.secret.exs
+#   config/*_dev.secret.exs
+#   config/*_test.secret.exs
+#   config/*_prod.secret.exs
+#   .env*
+#   log/
+#   logs/
+#   rel/
+#   assets/node_modules/
+#   assets/vendor/
+#   assets/dist/
+#   tmp/
+#   .tmp/
+#   .cache/
+#   .npm/
+#   .yarn/
+#   .mix/
+#   .hex/
+#   .DS_Store
+#   Thumbs.db
+#   .Spotlight-V100
+#   .Trashes
+#   ehthumbs.db
+#   *.swp
+#   *.swo
+#   .netrwhist
+#   Session.vim
+#   *~
+#   \#*\#
+#   .\#*
+#   __pycache__/
+#   *.pyc
+#   *.pyo
+#   .pytest_cache/
+#   .mypy_cache/
+#   .tox/
+#   .nox/
+#   .bundle/
+#   Gemfile.lock
+#   vendor/bundle/
+#   vendor/cache/
+#   vendor/gems/
+#   vendor/ruby/
+#   *.class
+#   *.jar
+#   *.war
+#   *.ear
+#   target/
+#   .gradle/
+#   build/
+#   *.exe
+#   *.dll
+#   *.so
+#   *.a
+#   *.o
+#   *.out
+#   bin/
+#   pkg/
+#   go.sum
+#   go.mod
+#   obj/
+#   Debug/
+#   Release/
+#   x64/
+#   x86/
+#   julia-*/
+#   .julia/
+#   zig-cache/
+#   zig-out/
+#   Cargo.lock

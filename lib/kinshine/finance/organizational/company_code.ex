@@ -12,6 +12,11 @@ defmodule Kinshine.Finance.Organizational.CompanyCode do
     field :comcrn, :string
     field :coaid, :string
 
+    belongs_to :chart_of_account, Kinshine.Finance.Organizational.ChartOfAccount,
+      type: :string,
+      foreign_key: :coaid,
+      references: :coaid
+
     timestamps()
   end
 
@@ -26,6 +31,11 @@ defmodule Kinshine.Finance.Organizational.CompanyCode do
     |> validate_length(:comcrn, max: 3)
     |> validate_length(:coaid, max: 4)
     |> validate_format(:comcod, ~r/^[A-Z0-9]+$/, message: "must be uppercase alphanumeric")
+    |> validate_format(:coaid, ~r/^[A-Z0-9]+$/,
+      message: "must be uppercase alphanumeric",
+      allow_nil: true
+    )
     |> unique_constraint(:comcod)
+    |> foreign_key_constraint(:coaid)
   end
 end
