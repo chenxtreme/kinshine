@@ -10,7 +10,6 @@ defmodule Kinshine.Finance.Organizational.CompanyCode do
     field :comadd, :string
     field :comcty, :string
     field :comcrn, :string
-    field :coaid, :string
 
     belongs_to :chart_of_account, Kinshine.Finance.Organizational.ChartOfAccount,
       type: :string,
