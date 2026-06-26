@@ -51,6 +51,12 @@ defmodule Kinshine.Finance.Organizational do
     CompanyCode.changeset(company_code, attrs)
   end
 
+  # Helper function to get all chart of accounts for dropdown
+  def list_chart_of_accounts_for_select do
+    Repo.all(ChartOfAccount)
+    |> Enum.map(fn coa -> {coa.coanam, coa.coaid} end)
+  end
+
   # ============================================================
   # FISCAL YEAR VARIANT (FFYVR)
   # ============================================================

@@ -24,29 +24,36 @@ defmodule KinshineWeb.CompanyCodeLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
+    chart_of_accounts = Finance.list_chart_of_accounts_for_select()
+
     socket
     |> assign(:page_title, "Company Code")
     |> assign(:form, nil)
     |> assign(:editing_id, nil)
+    |> assign(:chart_of_accounts, chart_of_accounts)
   end
 
   defp apply_action(socket, :new, _params) do
     changeset = Finance.change_company_code(%CompanyCode{}, %{})
+    chart_of_accounts = Finance.list_chart_of_accounts_for_select()
 
     socket
     |> assign(:page_title, "New Company Code")
     |> assign(:form, to_form(changeset, as: "company_code"))
     |> assign(:editing_id, nil)
+    |> assign(:chart_of_accounts, chart_of_accounts)
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     company_code = Finance.get_company_code!(id)
     changeset = Finance.change_company_code(company_code, %{})
+    chart_of_accounts = Finance.list_chart_of_accounts_for_select()
 
     socket
     |> assign(:page_title, "Edit Company Code")
     |> assign(:form, to_form(changeset, as: "company_code"))
     |> assign(:editing_id, id)
+    |> assign(:chart_of_accounts, chart_of_accounts)
   end
 
   @impl true
